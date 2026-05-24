@@ -1,6 +1,12 @@
 # FairSplit AI
 
+## Version
+
+`V1.0` initial version
+
 FairSplit AI is a split-first web app for friends. It turns messy shared-expense stories into fair shares and simplified settlements, with trip planning kept as a secondary helper for pre-trip budgeting and saved drafts.
+
+This repository currently represents the `V1.0` initial release. Core login, signup, split management, trip draft saving, reviews, and live activity are included in this version. Forgot-password recovery is planned for a later update and is not part of the `V1.0` release commitment.
 
 ## Tech Stack
 
@@ -127,12 +133,14 @@ FairSplit AI extracts participants, participation weights, payer, and total amou
 
 ## Main Product Features
 
+- `V1.0` initial release focused on split-first budgeting and settlement workflows
 - Natural-language expense splitting with voice input, OCR receipt import, and saved split history
 - Floating FairSplit assistant for settlement questions and budget-aware trip follow-ups
 - Prompt-to-plan trip budgeting as a secondary workflow
 - Saved trip drafts with itinerary and stay suggestions
 - My Trips page plus dedicated trip detail pages
 - Real-time weather, currency conversion, and Google Maps shortcuts for optional trip research
+- Forgot-password recovery is reserved for a later product update beyond `V1.0`
 
 ## Planning And Assistant APIs
 

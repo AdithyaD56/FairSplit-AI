@@ -52,6 +52,14 @@ export default function LandingPage() {
           >
             Developers
           </Link>
+          <a
+            href="/user-manual.md"
+            target="_blank"
+            rel="noreferrer"
+            className="rounded-full border border-white/85 bg-white/92 px-5 py-2.5 text-sm font-semibold text-slate-700 shadow-soft transition hover:-translate-y-0.5 dark:border-white/12 dark:bg-slate-900/95 dark:text-slate-100"
+          >
+            User Manual
+          </a>
           <button
             type="button"
             onClick={handlePrimaryAction}
@@ -101,6 +109,14 @@ export default function LandingPage() {
             >
               Contact & Developers
             </Link>
+            <a
+              href="/user-manual.md"
+              target="_blank"
+              rel="noreferrer"
+              className="rounded-full border border-white/85 bg-white/92 px-8 py-4 text-center text-base font-bold text-slate-700 shadow-soft backdrop-blur-xl transition hover:-translate-y-1 dark:border-white/12 dark:bg-slate-950/90 dark:text-slate-100"
+            >
+              User Manual
+            </a>
           </div>
         </div>
 
