@@ -121,7 +121,10 @@ export default function AuthPage() {
     try {
       const response = await authApi.forgotPassword({ email: forgotEmail });
       setForgotMessage(response.message || "If the email exists, a verification code has been prepared.");
-      navigate(`/auth/reset-password?email=${encodeURIComponent(forgotEmail)}`, { replace: false });
+      navigate(`/auth/reset-password?email=${encodeURIComponent(forgotEmail)}`, {
+        replace: false,
+        state: { codeSentAt: Date.now() },
+      });
     } catch (err) {
       setError(getApiError(err));
     } finally {

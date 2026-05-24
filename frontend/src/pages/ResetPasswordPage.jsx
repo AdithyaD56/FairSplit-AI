@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { useEffect, useMemo, useState } from "react";
+import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 
 import ThemeToggle from "../components/ThemeToggle";
 import { useAuth } from "../context/AuthContext";
@@ -11,7 +11,12 @@ function isStrongPassword(value) {
 
 export default function ResetPasswordPage() {
   const [params] = useSearchParams();
+  const location = useLocation();
   const initialEmail = params.get("email") || "";
+  const initialCodeSentAt = useMemo(
+    () => (typeof location.state?.codeSentAt === "number" ? location.state.codeSentAt : null),
+    [location.state],
+  );
   const [email, setEmail] = useState(initialEmail);
   const [otp, setOtp] = useState("");
   const [verified, setVerified] = useState(false);
@@ -20,13 +25,37 @@ export default function ResetPasswordPage() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [verifying, setVerifying] = useState(false);
+  const [resending, setResending] = useState(false);
   const [error, setError] = useState("");
+  const [infoMessage, setInfoMessage] = useState(
+    initialCodeSentAt ? "We sent a fresh verification code to your email." : "",
+  );
+  const [resendAvailableAt, setResendAvailableAt] = useState(
+    initialCodeSentAt ? initialCodeSentAt + 30_000 : Date.now(),
+  );
+  const [clock, setClock] = useState(Date.now());
   const { completeExternalSession } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
     setEmail(initialEmail);
   }, [initialEmail]);
+
+  const resendSecondsLeft = Math.max(0, Math.ceil((resendAvailableAt - clock) / 1000));
+
+  useEffect(() => {
+    if (resendSecondsLeft <= 0) return undefined;
+
+    const timer = window.setInterval(() => {
+      const now = Date.now();
+      setClock(now);
+      if (now >= resendAvailableAt) {
+        window.clearInterval(timer);
+      }
+    }, 1000);
+
+    return () => window.clearInterval(timer);
+  }, [resendAvailableAt, resendSecondsLeft]);
 
   async function handleVerifyCode(event) {
     event.preventDefault();
@@ -93,6 +122,32 @@ export default function ResetPasswordPage() {
     }
   }
 
+  async function handleResendCode() {
+    setError("");
+
+    if (!email) {
+      setError("Enter your account email first.");
+      return;
+    }
+    if (resendSecondsLeft > 0) {
+      return;
+    }
+
+    setResending(true);
+    try {
+      const response = await authApi.forgotPassword({ email });
+      setInfoMessage(response.message || "A new verification code has been sent if the email exists.");
+      setOtp("");
+      setVerified(false);
+      setResetToken("");
+      setResendAvailableAt(Date.now() + 30_000);
+    } catch (err) {
+      setError(getApiError(err));
+    } finally {
+      setResending(false);
+    }
+  }
+
   return (
     <main className="animated-shell min-h-screen px-4 py-8 dark:text-slate-100">
       <div className="relative z-10 mx-auto flex min-h-[80vh] max-w-2xl items-center justify-center">
@@ -116,6 +171,12 @@ export default function ResetPasswordPage() {
           <p className="mt-4 text-sm leading-7 text-slate-600 dark:text-slate-300">
             We sent a 6-digit code to your email. Verify it first, then choose a fresh password.
           </p>
+
+          {infoMessage ? (
+            <div className="mt-6 rounded-[1.4rem] bg-emerald-50 px-5 py-4 text-sm font-semibold text-emerald-700 dark:bg-emerald-500/12 dark:text-emerald-200">
+              {infoMessage}
+            </div>
+          ) : null}
 
           <form onSubmit={verified ? handleSubmit : handleVerifyCode} className="mt-8 space-y-5">
             <label className="block">
@@ -185,6 +246,26 @@ export default function ResetPasswordPage() {
             {error ? (
               <div className="rounded-[1.4rem] bg-rose-50 px-5 py-4 text-sm font-semibold text-rose-700 dark:bg-rose-500/12 dark:text-rose-200">
                 {error}
+              </div>
+            ) : null}
+
+            {!verified ? (
+              <div className="flex flex-col items-start gap-2 rounded-[1.4rem] border border-slate-200/90 bg-slate-50/90 px-5 py-4 dark:border-white/12 dark:bg-slate-900/70">
+                <button
+                  type="button"
+                  onClick={handleResendCode}
+                  disabled={resending || resendSecondsLeft > 0}
+                  className="text-sm font-bold text-brand-700 transition hover:underline disabled:cursor-not-allowed disabled:text-slate-400 disabled:no-underline dark:text-brand-200 dark:disabled:text-slate-500"
+                >
+                  {resending
+                    ? "Sending new code..."
+                    : resendSecondsLeft > 0
+                      ? `Resend code in ${resendSecondsLeft}s`
+                      : "Resend code"}
+                </button>
+                <p className="text-xs font-medium leading-6 text-slate-500 dark:text-slate-400">
+                  Need another OTP? You can request a fresh code every 30 seconds.
+                </p>
               </div>
             ) : null}
 
