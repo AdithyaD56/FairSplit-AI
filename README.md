@@ -121,33 +121,6 @@ The platform intelligently converts messy expense stories into:
 
 ---
 
-# 📦 Release Scope
-
-This repository reflects the **`V1.0` initial release**.
-
-## ✅ Included In V1.0
-
-- Account signup and login
-- Expense analysis and settlement output
-- Split history
-- Trip draft generation
-- Saved trip views
-- Reviews and live activity experiences
-- Public developer page
-- Admin editing tools
-
----
-
-## 🔮 Planned For Later Updates
-
-- Forgot-password recovery flow
-- Advanced collaborative splitting
-- Real-time sync improvements
-- Expense analytics dashboard
-- Multi-currency settlements
-
----
-
 # 🛠️ Tech Stack
 
 | Layer | Technologies |
@@ -174,27 +147,39 @@ This repository reflects the **`V1.0` initial release**.
 # 📂 Project Structure
 
 ```text
-backend/
-  app/
-    core/
-    models/
-    routers/
-    schemas/
-    services/
-    main.py
-  requirements.txt
-  .env.example
-
-frontend/
-  public/
-  src/
-    components/
-    context/
-    pages/
-    services/
-    utils/
-  package.json
-  .env.example
+FairSplit-AI
+│
+├── backend
+│   │
+│   ├── app
+│   │   │
+│   │   ├── core
+│   │   ├── models
+│   │   ├── routers
+│   │   ├── schemas
+│   │   ├── services
+│   │   └── main.py
+│   │
+│   ├── requirements.txt
+│   └── .env.example
+│
+├── frontend
+│   │
+│   ├── public
+│   │
+│   ├── src
+│   │   │
+│   │   ├── components
+│   │   ├── context
+│   │   ├── pages
+│   │   ├── services
+│   │   └── utils
+│   │
+│   ├── package.json
+│   └── .env.example
+│
+├── USER_MANUAL.md
+└── README.md
 ```
 
 ---
@@ -407,26 +392,6 @@ Settlement generated successfully.
 
 ---
 
-# 🧭 Product Positioning
-
-FairSplit AI is intentionally designed as a:
-
-# “Split-First Platform”
-
-That means:
-- expense clarity comes before everything else
-- travel planning exists only to support budgeting
-- the assistant remains practical and focused
-- the user experience avoids unnecessary complexity
-
-The platform prioritizes:
-- simplicity
-- transparency
-- fairness
-- conversational workflows
-
----
-
 # 📘 User Manual
 
 The complete user manual is available here:
@@ -483,20 +448,6 @@ FairSplit AI is highly suitable for showcasing skills related to:
 
 ---
 
-# 📊 Overall Evaluation
-
-| Area | Rating |
-| :--- | :--- |
-| Idea Originality | 9/10 |
-| Technical Stack | 9/10 |
-| Full-Stack Design | 9/10 |
-| AI Integration | 8.5/10 |
-| Resume Strength | 9.5/10 |
-| Real-World Utility | 9/10 |
-| Scalability Potential | 8.5/10 |
-
----
-
 # 🔮 Future Vision
 
 Planned future improvements include:
@@ -521,16 +472,10 @@ Planned future improvements include:
 
 ---
 
-# 📜 License
-
-This project is licensed under the MIT License.
-
----
-
 <div align="center">
 
 # ⭐ If You Like This Project, Give It A Star ⭐
 
 ### Built with AI, Full-Stack Engineering, and Product Thinking
 
-</div>
+</div
