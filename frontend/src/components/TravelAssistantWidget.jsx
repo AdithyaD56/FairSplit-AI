@@ -243,8 +243,8 @@ export default function TravelAssistantWidget({
         className="fixed inset-0 z-0 bg-transparent"
       />
       <div className="pointer-events-none relative z-10">
-        <div className="assistant-glass-panel pointer-events-auto overflow-hidden rounded-[2rem]">
-          <div className="assistant-glass-header border-b px-5 py-4">
+        <div className="assistant-glass-panel pointer-events-auto flex max-h-[calc(100vh-2.5rem)] flex-col overflow-hidden rounded-[2rem]">
+          <div className="assistant-glass-header shrink-0 border-b px-5 py-4">
             <div className="flex items-start justify-between gap-4">
               <div className="flex items-center gap-3">
                 <div className="avatar-shell h-12 w-12 text-brand-700">
@@ -285,7 +285,7 @@ export default function TravelAssistantWidget({
             )}
           </div>
 
-          <div className="max-h-[62vh] overflow-y-auto px-5 py-4">
+          <div className="min-h-0 flex-1 overflow-y-auto px-5 py-4">
             <div className="space-y-3">
               {messages.map((message, index) => (
                 <MessageBubble key={`${message.role}-${index}`} message={message} />
@@ -318,7 +318,7 @@ export default function TravelAssistantWidget({
             ) : null}
           </div>
 
-          <form onSubmit={handleSubmit} className="border-t border-slate-100 bg-white px-5 py-4 dark:border-white/10 dark:bg-slate-950">
+          <form onSubmit={handleSubmit} className="shrink-0 border-t border-slate-100 bg-white px-5 py-4 dark:border-white/10 dark:bg-slate-950">
             <textarea
               value={draft}
               onChange={(event) => setDraft(event.target.value)}
