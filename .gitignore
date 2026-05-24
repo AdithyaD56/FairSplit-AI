@@ -1,0 +1,15 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.env
+backend/fairsplit.db
+backend/uploads/
+
+# Node
+node_modules/
+dist/
+
+# Tooling
+.DS_Store
+Thumbs.db
