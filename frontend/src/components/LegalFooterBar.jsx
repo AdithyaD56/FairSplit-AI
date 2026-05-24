@@ -5,6 +5,9 @@ export default function LegalFooterBar() {
     <div className="legal-footer-bar">
       <p className="legal-footer-copy">© 2026 FairSplit AI. All rights reserved.</p>
       <div className="legal-footer-links">
+        <Link to="/user-manual" className="legal-footer-link">
+          User Manual
+        </Link>
         <Link to="/privacy" className="legal-footer-link">
           Privacy Policy
         </Link>

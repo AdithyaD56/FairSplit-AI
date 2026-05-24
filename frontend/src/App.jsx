@@ -20,6 +20,7 @@ import TravelPlannerPage from "./pages/TravelPlannerPage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
 import TripDetailPage from "./pages/TripDetailPage";
 import TripsPage from "./pages/TripsPage";
+import UserManualPage from "./pages/UserManualPage";
 
 function routeLabel(pathname) {
   if (pathname.startsWith("/trip-planner")) return "Opening the travel workspace";
@@ -30,6 +31,7 @@ function routeLabel(pathname) {
   if (pathname.startsWith("/developers")) return "Opening developer details";
   if (pathname.startsWith("/privacy")) return "Opening privacy policy";
   if (pathname.startsWith("/terms")) return "Opening terms and conditions";
+  if (pathname.startsWith("/user-manual")) return "Opening the user manual";
   if (pathname.startsWith("/reviews")) return "Opening reviews";
   if (pathname.startsWith("/dashboard")) return "Opening the splitter";
   if (pathname.startsWith("/admin")) return "Opening admin controls";
@@ -51,7 +53,8 @@ function routeRank(pathname) {
   if (pathname.startsWith("/history")) return 8;
   if (pathname.startsWith("/privacy")) return 9;
   if (pathname.startsWith("/terms")) return 10;
-  if (pathname.startsWith("/admin")) return 11;
+  if (pathname.startsWith("/user-manual")) return 11;
+  if (pathname.startsWith("/admin")) return 12;
   return 100;
 }
 
@@ -62,6 +65,7 @@ function AppRoutes({ location }) {
       <Route path="/developers" element={<DeveloperPage />} />
       <Route path="/privacy" element={<PrivacyPage />} />
       <Route path="/terms" element={<TermsPage />} />
+      <Route path="/user-manual" element={<UserManualPage />} />
       <Route path="/auth" element={<AuthPage />} />
       <Route path="/auth/callback" element={<AuthCallbackPage />} />
       <Route path="/auth/reset-password" element={<ResetPasswordPage />} />
