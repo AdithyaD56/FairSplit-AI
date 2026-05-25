@@ -62,6 +62,16 @@ export default function AuthPage() {
     navigate(user.role === "admin" ? "/admin" : "/dashboard", { replace: true });
   }, [authLoading, navigate, user]);
 
+  function redirectAfterAuth(nextUser) {
+    const target = nextUser.role === "admin" ? "/admin" : "/dashboard";
+    navigate(target, { replace: true });
+    window.setTimeout(() => {
+      if (window.location.pathname !== target) {
+        window.location.assign(target);
+      }
+    }, 150);
+  }
+
   useEffect(() => {
     if (mode !== "login") {
       setShowForgotPassword(false);
@@ -90,7 +100,7 @@ export default function AuthPage() {
         mode === "signup"
           ? await signup(form)
           : await login({ email: form.email, password: form.password });
-      navigate(nextUser.role === "admin" ? "/admin" : "/dashboard", { replace: true });
+      redirectAfterAuth(nextUser);
     } catch (err) {
       setError(getApiError(err));
     } finally {

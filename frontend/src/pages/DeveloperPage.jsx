@@ -61,9 +61,14 @@ export default function DeveloperPage() {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [avatarFailed, setAvatarFailed] = useState(false);
   const avatarSrc = profile?.avatar_url?.startsWith("/")
     ? `${api.defaults.baseURL}${profile.avatar_url}`
     : profile?.avatar_url;
+
+  useEffect(() => {
+    setAvatarFailed(false);
+  }, [avatarSrc]);
 
   useEffect(() => {
     async function loadProfile() {
@@ -155,7 +160,7 @@ export default function DeveloperPage() {
           />
 
           {loading ? (
-            <div className="mt-8 rounded-[1.8rem] border border-white/70 bg-white/80 p-6 text-sm text-slate-600 dark:border-white/12 dark:bg-slate-900/92 dark:text-slate-300">
+            <div className="mt-8 rounded-[1.8rem] border border-slate-200/80 bg-slate-50/92 p-6 text-sm font-semibold text-slate-700 shadow-soft dark:border-white/12 dark:bg-slate-900/96 dark:text-slate-100">
               Loading developer details...
             </div>
           ) : error ? (
@@ -166,11 +171,18 @@ export default function DeveloperPage() {
             <section className="mt-8 grid gap-6 md:grid-cols-[15rem_1fr]">
               <div className="rounded-[2rem] border border-white/80 bg-gradient-to-br from-white via-brand-50/70 to-sky-50/70 p-5 shadow-soft dark:border-white/12 dark:from-slate-900/95 dark:via-brand-950/20 dark:to-slate-900">
                 <div className="overflow-hidden rounded-[1.6rem] border border-white/70 bg-white/80 shadow-soft dark:border-white/12 dark:bg-slate-950/90">
-                  <img
-                    src={avatarSrc}
-                    alt={profile?.display_name || "Developer"}
-                    className="h-56 w-full object-cover"
-                  />
+                  {avatarSrc && !avatarFailed ? (
+                    <img
+                      src={avatarSrc}
+                      alt={profile?.display_name || "Developer"}
+                      className="h-56 w-full object-cover"
+                      onError={() => setAvatarFailed(true)}
+                    />
+                  ) : (
+                    <div className="flex h-56 w-full items-center justify-center bg-slate-100/90 text-center text-sm font-semibold text-slate-600 dark:bg-slate-900 dark:text-slate-200">
+                      Avatar preview unavailable
+                    </div>
+                  )}
                 </div>
               </div>
 

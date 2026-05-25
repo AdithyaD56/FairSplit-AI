@@ -1,5 +1,6 @@
 import json
 import re
+from datetime import UTC, datetime
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
@@ -90,6 +91,19 @@ FOLLOW_UP_HINTS = {
     "schedule plan",
     "week plan",
     "yes",
+}
+
+CURRENT_PERIOD_HINTS = {
+    "at this time",
+    "best now",
+    "current season",
+    "during this period",
+    "during this season",
+    "right now",
+    "this month",
+    "this season",
+    "this time",
+    "this time period",
 }
 
 
@@ -204,6 +218,7 @@ def _chat_with_openai(
     if client is None:
         raise RuntimeError("OpenAI client unavailable")
 
+    current_period_context = _current_period_context()
     completion = client.chat.completions.create(
         model=_assistant_model_name(mode),
         temperature=0.2,
@@ -216,6 +231,7 @@ def _chat_with_openai(
                     "Mode guide: splitter mode should focus only on settlements, planner mode should help create or explain trip drafts, scout mode should search and return direct travel details, auto mode should infer the best path. "
                     "If expense tool data is present, trust those numbers exactly and never recalculate differently. "
                     "If a saved trip draft tool is present, mention that the trip was saved and summarize the route, budget, average per person, and week-level schedule clearly. "
+                    "When a user says phrases like this time, this time period, this season, this month, or right now, interpret that against the current real date you were given and answer directly without asking for the dates first. "
                     "When the user asks for hotels, cafes, transport, visas, or attractions, search the web and give direct details yourself. "
                     "Do not tell the user to use Google Maps, apply filters, or search manually. "
                     "Keep answers short, plain-text, and practical. Use simple sentences only. No markdown, no headings, no asterisks, no tables, and no more than three concrete recommendations unless the user asks for more."
@@ -227,6 +243,7 @@ def _chat_with_openai(
                     {
                         "mode": mode,
                         "page": page,
+                        "current_period": current_period_context,
                         "expense_tool": _json_safe_tool(expense_tool),
                         "trip_tool": _json_safe_tool(trip_tool),
                         "generated_trip_tool": _json_safe_tool(generated_trip_tool),
@@ -247,6 +264,7 @@ def _chat_with_gemini(
     trip_tool: dict | None,
     generated_trip_tool: dict | None,
 ) -> str:
+    current_period_context = _current_period_context()
     request = Request(
         "https://generativelanguage.googleapis.com/v1beta/models/"
         f"{settings.gemini_model}:generateContent",
@@ -261,10 +279,12 @@ def _chat_with_gemini(
                                         "instructions": (
                                             "You are FairSplit AI. Keep answers short, direct, and website-ready. "
                                             "Use the tool data exactly if it exists. Do not tell users to search manually. "
+                                            "If the user refers to this time period, this season, this month, or right now, use the current date context provided and answer directly instead of asking a follow-up for dates. "
                                             "Return plain text only with no markdown, headings, or bullet characters."
                                         ),
                                         "mode": mode,
                                         "page": page,
+                                        "current_period": current_period_context,
                                         "tool_context": {
                                             "expense_tool": _json_safe_tool(expense_tool),
                                             "trip_tool": _json_safe_tool(trip_tool),
@@ -464,6 +484,10 @@ def _fallback_reply(
             f"{notes_line}"
         )
 
+    current_period_reply = _current_period_scout_reply(latest_user_message, mode, page)
+    if current_period_reply:
+        return current_period_reply
+
     if mode == "splitter" or page in {"dashboard", "settlements"}:
         return "Paste the full expense story in one message and I will tell you who owes whom."
 
@@ -534,6 +558,41 @@ def _looks_like_trip_question(
     if page == "trip-planner":
         return trip_score > 0 or bool(trip_context.destination.strip())
     return trip_score >= 2
+
+
+def _current_period_scout_reply(message: str, mode: str, page: str) -> str:
+    lowered = message.lower()
+    if mode not in {"auto", "scout", "planner"} and page != "trip-planner":
+        return ""
+    if not any(hint in lowered for hint in CURRENT_PERIOD_HINTS):
+        return ""
+    if "destination" not in lowered and "visit" not in lowered and "travel" not in lowered:
+        return ""
+
+    context = _current_period_context()
+    month = context["month_number"]
+    period_label = context["period_label"]
+
+    if month in {3, 4, 5, 6}:
+        return (
+            f"Assuming you mean {period_label}, cooler destinations usually work best. "
+            "I would shortlist Kashmir, Himachal Pradesh, and Sikkim first. "
+            "They are stronger picks now because plains and many city breaks are usually much hotter in this stretch."
+        )
+    if month in {7, 8, 9}:
+        return (
+            f"If you mean {period_label}, I would lean toward monsoon-friendly trips like Udaipur, Coorg, and Alleppey. "
+            "Those work well if you enjoy greenery, slower stays, and shorter scenic outings during the rainy season."
+        )
+    if month in {10, 11}:
+        return (
+            f"For {period_label}, I would shortlist Rajasthan, Hampi, and Kerala. "
+            "This is usually a sweet spot for clearer weather, easier sightseeing, and balanced travel conditions."
+        )
+    return (
+        f"For {period_label}, I would shortlist Goa, Kerala, and Rajasthan. "
+        "This part of the year usually suits beach breaks, city walks, and warmer winter travel better than high-rain or peak-heat destinations."
+    )
 
 
 def _looks_like_trip_generation_request(message: str, mode: str, page: str) -> bool:
@@ -637,3 +696,25 @@ def _clean_assistant_reply(value: object) -> str:
 
 def _truncate(text: str, limit: int) -> str:
     return text[:limit].strip()
+
+
+def _current_period_context() -> dict[str, str | int]:
+    now = datetime.now(UTC)
+    month_name = now.strftime("%B")
+    month = now.month
+    if month in {3, 4, 5, 6}:
+        season_label = "late spring to early summer"
+    elif month in {7, 8, 9}:
+        season_label = "monsoon season"
+    elif month in {10, 11}:
+        season_label = "post-monsoon season"
+    else:
+        season_label = "winter season"
+
+    return {
+        "current_date": now.strftime("%Y-%m-%d"),
+        "month_name": month_name,
+        "month_number": month,
+        "season_label": season_label,
+        "period_label": f"{month_name} {now.year} during the {season_label}",
+    }

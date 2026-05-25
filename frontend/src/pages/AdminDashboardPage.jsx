@@ -8,6 +8,23 @@ import { useAuth } from "../context/AuthContext";
 import { adminApi, api, getApiError } from "../services/api";
 import { formatCurrency, formatDate } from "../utils/formatters";
 
+function normalizeLiveExpense(event) {
+  if (event?.type !== "expense.created" || !event?.payload) return null;
+  return {
+    id: event.payload.id,
+    user_id: event.payload.user_id,
+    user_email: event.payload.user_email || "",
+    user_name: event.actor?.name || "User",
+    scenario: event.payload.scenario || "",
+    total_amount: event.payload.total_amount || 0,
+    payer_name: event.payload.payer_name || "",
+    participants: event.payload.participants || [],
+    shares: event.payload.shares || [],
+    settlements: event.payload.settlements || [],
+    created_at: event.payload.created_at,
+  };
+}
+
 function statusBadge(status) {
   if (status === "active") {
     return "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-200";
@@ -264,6 +281,33 @@ export default function AdminDashboardPage() {
 
   useEffect(() => {
     if (!latestEvent) return;
+    if (latestEvent.type === "expense.created") {
+      const liveExpense = normalizeLiveExpense(latestEvent);
+      if (liveExpense) {
+        setExpenses((current) => {
+          if (current.some((item) => item.id === liveExpense.id)) {
+            return current;
+          }
+          return [liveExpense, ...current];
+        });
+        setOverview((current) =>
+          current
+            ? {
+                ...current,
+                total_splits: current.total_splits + 1,
+                total_amount: Number(current.total_amount || 0) + Number(liveExpense.total_amount || 0),
+                live_split_events_24h: Number(current.live_split_events_24h || 0) + 1,
+              }
+            : current,
+        );
+      }
+    }
+    if (latestEvent.type === "expense.deleted") {
+      const removedExpenseId = latestEvent.payload?.expense_id;
+      if (removedExpenseId) {
+        setExpenses((current) => current.filter((item) => item.id !== removedExpenseId));
+      }
+    }
     loadAdminData({ quiet: true });
   }, [latestEvent]);
 
